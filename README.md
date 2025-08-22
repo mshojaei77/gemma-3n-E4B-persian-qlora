@@ -1,8 +1,9 @@
 # Gemma-3N 4B Persian Fine-tuning Project
 
 <div align="center">
-  <h3>🇮🇷 Persian Language Model Fine-tuning with QLoRA</h3>
-  <p><strong>Fine-tuning Google's Gemma-3N 4B for Persian conversational AI</strong></p>
+  <img src="https://github.com/user-attachments/assets/0c52d460-1831-46aa-b3e6-b1a5249c0174" alt="Hugging Face" width="100"/>
+  <br>
+  <strong>🇮🇷 Persian Language Model | 🤖 Conversational AI | 📚 General Knowledge</strong>
 </div>
 
 ## 📋 Project Overview
