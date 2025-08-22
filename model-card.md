@@ -64,29 +64,7 @@ This model is a fine-tuned version of `unsloth/gemma-3n-E4B-it`, optimized for P
 ### Intended Uses
 This model is designed for direct use in Persian conversational AI, including instruction-following and general knowledge queries in domains such as Persian heritage, programming, architecture, and tourism. It is suitable for downstream applications like chat interfaces or educational tools. Out-of-scope uses include non-Persian languages or safety-critical applications.
 
-## Training
-
-### Training Data
-- **Dataset**: `mshojaei77/persian-gk` (cleaned version: `mshojaei77/persian-gk-cleaned`), comprising 5,897 Persian conversations in ChatML format.
-- **Domains**: Programming, Persian heritage, architecture, tourism, and general Q&A.
-- **License**: CC-BY-4.0.
-
-### Training Procedure
-The model was fine-tuned using QLoRA with 4-bit quantization.
-- **LoRA Parameters**: Rank=8, alpha=16, dropout=0.0; target modules: `q_proj`, `k_proj`, `v_proj`, `o_proj`, `gate_proj`, `up_proj`, `down_proj`.
-- **Hyperparameters**: Learning rate=2e-5, batch size=2 (effective=8 with gradient accumulation=4), epochs=1, optimizer=AdamW 8-bit, weight decay=0.01, warmup steps=10, linear LR scheduler, seed=3407.
-- **Framework**: Unsloth with Weights & Biases monitoring.
-- **Infrastructure**: Google Colab with GPU acceleration.
-
-The merging process integrated LoRA adapters into the base model, converting to 16-bit precision for standalone use.
-
-## Bias, Risks, and Limitations
-
-- **Limitations**: Optimized for Persian; performance may degrade in other languages. Knowledge is limited to training data (no real-time updates). Potential for hallucinations or biases from the dataset.
-- **Risks**: May reflect cultural biases; not suitable for critical decisions (e.g., medical, legal).
-- **Ethical Considerations**: Users should verify outputs, avoid sensitive data, and ensure ethical use.
-
-## Usage
+## How to Use
 
 ### Quick Start with Transformers
 
@@ -128,25 +106,80 @@ quant_config = BitsAndBytesConfig(load_in_8bit=True, llm_int8_threshold=6.0)
 model = AutoModelForCausalLM.from_pretrained(model_id, quantization_config=quant_config, device_map="auto")
 ```
 
+## Training
+
+### Training Data
+- **Dataset**: `mshojaei77/persian-gk` (cleaned version: `mshojaei77/persian-gk-cleaned`), comprising 5,897 Persian conversations in ChatML format.
+- **Domains**: Programming, Persian heritage, architecture, tourism, and general Q&A.
+- **License**: CC-BY-4.0.
+
+### Training Procedure
+The model was fine-tuned using QLoRA with 4-bit quantization.
+- **LoRA Parameters**: Rank=8, alpha=16, dropout=0.0; target modules: `q_proj`, `k_proj`, `v_proj`, `o_proj`, `gate_proj`, `up_proj`, `down_proj`.
+- **Hyperparameters**: Learning rate=2e-5, batch size=2 (effective=8 with gradient accumulation=4), epochs=1, optimizer=AdamW 8-bit, weight decay=0.01, warmup steps=10, linear LR scheduler, seed=3407.
+- **Framework**: Unsloth with Weights & Biases monitoring.
+- **Infrastructure**: Google Colab with GPU acceleration.
+
+The merging process integrated LoRA adapters into the base model, converting to 16-bit precision for standalone use.
+
+## Evaluation Results
+
+The model achieved a final training loss of 1.78, with gradient norms stabilizing between 0.7 and 2.0. Training completed in 2 hours and 20 minutes on a T4 GPU.
+
+Inference performance:
+
+| Scenario | GPU | max_new_tokens=256 | Runtime |
+|----------|-----|--------------------|---------|
+| Single prompt | RTX T4 (16 GB) | 8.5 s | 22 tok s⁻¹ |
+| Batch 4 | RTX T4 | 19 s | 54 tok s⁻¹ aggregated |
+
+For detailed analyses of training dynamics, including loss and gradient norm charts, refer to the technical report.
+
+## Bias, Risks, and Limitations
+
+### Limitations
+
+* **Language Scope**: The model is optimised for Persian (Farsi). Responses in other languages may be less fluent or factually reliable.  
+* **Knowledge Cut-off**: Training data ends at January 2024; the model lacks awareness of subsequent events.  
+* **Hallucination**: Like other LLMs, it can generate plausible-sounding but incorrect or fabricated information. Always verify critical outputs.  
+* **Context Window**: Although the architecture supports 32 k tokens, prompts exceeding 4 k tokens were not present during training and may degrade performance.  
+* **Domain Transfer**: Performance may drop on highly specialised or safety-critical domains (medical, legal, financial) that are under-represented in the dataset.  
+* **Compute Requirements**: FP16 inference needs ≈ 10 GB GPU VRAM; use 8-bit/4-bit quantisation for lower-resource devices.
+* **Dataset Scale**: Limited to ~6k pairs, potentially overlooking linguistic diversity.
+* **Training Regimen**: Single-epoch training may not fully optimize performance.
+
+### Ethical & Safety Considerations
+
+* The model may reflect cultural or societal biases found in the source data.  
+* Do **not** rely on the model as the sole source of truth for professional advice (medical, legal, financial, etc.).  
+* Implement content filtering and human oversight when deploying user-facing applications, especially for minors or vulnerable groups.  
+* Comply with the Gemma Terms of Use, dataset licence (CC-BY-4.0), and local regulations on user privacy and content moderation.
+* Potential for misuse in generating harmful content; mitigations include prompt engineering and output filtering.
+
+### Environmental Impact
+Training emitted approximately 0.5 kg CO₂ equivalent, based on GPU usage and regional electricity factors.
+
+
+
 ## Reproduction
 
-Reproduce training using the provided notebooks: `training_qlora-4bit-colab-notebook.md` for QLoRA setup and `merging-adaptors-kaggle-notebook.md` for adapter merging.
+For detailed technical information about the training process, methodology, and evaluation results, see the [technical report](https://github.com/mshojaei77/gemma-3n-E4B-persian-qlora/blob/main/technical_report.md).
 
 ## Related Resources
 
 - **Base Model**: `unsloth/gemma-3n-E4B-it`.
 - **Adapters**: `mshojaei77/gemma-3n-E4B-persian-lora-adapters`.
 - **Dataset**: `mshojaei77/persian-gk`.
-- **GitHub**: `mshojaei77/gemma-3n-E4B-persin-qlora`.
+- **GitHub**: [mshojaei77/gemma-3n-E4B-persian-qlora](https://github.com/mshojaei77/gemma-3n-E4B-persian-qlora).
 - **Frameworks**: Unsloth (arXiv:2305.14314), PEFT (arXiv:2106.09685), Transformers.
 
 ## Citation
 
 ```bibtex
-@misc{gemma3n_persian_2024,
+@misc{gemma3n_persian_2025,
   title={Gemma-3N 4B Persian Fine-tuned Model},
   author={Shojaei, M.},
-  year={2024},
+  year={2025},
   publisher={Hugging Face},
   url={https://huggingface.co/mshojaei77/gemma-3n-E4B-persian},
   note={Fine-tuned using QLoRA on Persian General Knowledge dataset}
@@ -156,10 +189,10 @@ Reproduce training using the provided notebooks: `training_qlora-4bit-colab-note
 Dataset citation:
 
 ```bibtex
-@misc{persian_gk_2024,
+@misc{persian_gk_2025,
   title={persian-gk: Persian General Knowledge Chat Dataset},
   author={Shojaei, M. and Contributors},
-  year={2024},
+  year={2025},
   url={https://huggingface.co/datasets/mshojaei77/persian-gk}
 }
 ```
